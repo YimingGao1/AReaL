@@ -35,7 +35,7 @@ from areal.utils.stats_logger import StatsLogger
 
 from dataset import build_env_dataset
 from agent_args import AgentGRPOConfig
-from workflow_new import VisionMultiTurnAgentEnvWorkflow
+from workflow_v2 import VisionMultiTurnAgentEnvWorkflow
 
 # ------------------------------------------------------
 # Utilities
