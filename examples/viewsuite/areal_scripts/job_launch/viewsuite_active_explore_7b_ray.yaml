@@ -1,5 +1,5 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_7b-1
+trial_name: viewsuite_active_explore_7b-2
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
@@ -14,7 +14,7 @@ cluster:
     type: ray
     nfs_record_root: ${fileroot}/name_resolve
 
-allocation_mode: sglang.d4t2+d1t4c2
+allocation_mode: sglang.d4t2+d8
 
 rollout:
   experiment_name: ${experiment_name}
@@ -105,7 +105,7 @@ sglang:
 
 # datasets
 train_dataset:
-  batch_size: 32
+  batch_size: 4
   shuffle: true
   pin_memory: true
   num_workers: 4
@@ -113,7 +113,7 @@ train_dataset:
   type: rl
 
 valid_dataset:
-  batch_size: 32
+  batch_size: ${train_dataset.batch_size}
   shuffle: true
   pin_memory: true
   num_workers: 4
@@ -168,38 +168,85 @@ envs:
     split: train
     max_turns: 10
     config:
-      jsonl_path: ${fileroot}/data/scannet_proxy_task_train/active_explore_qa.jsonl
-      max_turns: ${envs[0].max_turns}
-      render_backend: client
-      client_url: ws://165.124.184.151:8766/render
-
-  - name: GymProxyTool
-    n_envs: 70 #560
-    tag_id: 2
-    seed: [1,561,1]
-    split: valid
-    max_turns: 10
-    config:
-      jsonl_path: ${fileroot}/data/scannet_proxy_task_train/active_explore_qa.jsonl
+      jsonl_path: ~/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
       max_turns: ${envs[0].max_turns}
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
 
   - name: GymProxyNoTool
-    n_envs: 280 #560
-    tag_id: 1
-    seed: [1,561,1]
-    split: valid
-    max_turns: 1
-    config:
-      jsonl_path: ${fileroot}/data/scannet_proxy_task_dev/inverse_dynamics_qa.jsonl
-
-  - name: GymProxyNoTool
-    n_envs: 280 #560
+    n_envs: 2 #560
     tag_id: 0
     seed: [1,561,1]
     split: valid
     max_turns: 1
     config:
-      jsonl_path: ${fileroot}/data/scannet_proxy_task_dev/forward_dynamics_qa.jsonl
+      jsonl_path: ~/projects/data/scannet_proxy_task_dev/forward_dynamics_qa.jsonl
+
+  - name: GymProxyNoTool
+    n_envs: 2 #560
+    tag_id: 1
+    seed: [1,561,1]
+    split: valid
+    max_turns: 1
+    config:
+      jsonl_path: ~/projects/data/scannet_proxy_task_dev/inverse_dynamics_qa.jsonl
+
+  - name: GymProxyTool
+    n_envs: 2 #560
+    tag_id: 2
+    seed: [1,561,1]
+    split: valid
+    max_turns: 10
+    config:
+      jsonl_path: ~/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
+      max_turns: ${envs[0].max_turns}
+      render_backend: client
+      client_url: ws://165.124.184.151:8766/render
+
+  - name: ViewSpatialNoToolGym
+    n_envs: 2
+    split: valid
+    tag_id: 3
+    seed: [0,318,1]
+    max_turns: 1
+    config:
+      jsonl_path: ~/projects/data/viewspatial_scannet_out/dataset_test.jsonl
+
+  - name: ViewSpatialToolGym
+    n_envs: 2
+    split: valid
+    tag_id: 4
+    seed: [0,318,1]
+    max_turns: 10
+    config:
+      jsonl_path: ~/projects/data/viewspatial_scannet_out/dataset_test.jsonl
+      render_backend: client
+      client_url: ws://165.124.184.151:8766/render
+
+  - name: VSIBenchNoToolGym
+    n_envs: 2
+    split: valid
+    tag_id: 5
+    seed: [0,2071,1]
+    max_turns: 1
+    config:
+      jsonl_path: ~/projects/data/vsi_bench/vsi_bench.jsonl
+      camposes_dir: ~/projects/data/vsi_bench/camposes
+      video_dir: ~/projects/data/vsi_bench/vsi_bench_video
+
+  - name: VSIBenchToolGym
+    n_envs: 2
+    split: valid
+    tag_id: 6
+    seed: [0,2071,1]
+    max_turns: 10
+    config:
+      jsonl_path: ~/projects/data/vsi_bench/vsi_bench.jsonl
+      camposes_dir: ~/projects/data/vsi_bench/camposes
+      video_dir: ~/projects/data/vsi_bench/vsi_bench_video
+      render_backend: client
+      client_url: ws://165.124.184.151:8766/render
+      max_turns: 10
+      sample_frames: 16
+      view_interval: 8
 
