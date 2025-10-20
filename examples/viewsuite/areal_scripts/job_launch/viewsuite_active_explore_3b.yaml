@@ -1,5 +1,5 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_3b-test-6
+trial_name: viewsuite_active_explore_3b-test-7
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
@@ -105,7 +105,7 @@ sglang:
 
 # datasets
 train_dataset:
-  batch_size: 4
+  batch_size: 32
   shuffle: true
   pin_memory: true
   num_workers: 4
@@ -126,7 +126,7 @@ saver:
   trial_name: ${trial_name}
   fileroot: ${cluster.fileroot}
   freq_epochs: null
-  freq_steps: 10
+  freq_steps: 40
   freq_secs: null
 
 recover:
@@ -143,7 +143,7 @@ evaluator:
   trial_name: ${trial_name}
   fileroot: ${cluster.fileroot}
   freq_epochs: null
-  freq_steps: 10
+  freq_steps: 40
   freq_secs: null
 
 stats_logger:
@@ -174,7 +174,7 @@ envs:
       client_url: ws://165.124.184.151:8766/render
 
   - name: GymProxyNoTool
-    n_envs: 2 #560
+    n_envs: 32 #560
     tag_id: 0
     seed: [1,561,1]
     split: valid
@@ -183,7 +183,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_dev/forward_dynamics_qa.jsonl
 
   - name: GymProxyNoTool
-    n_envs: 2 #560
+    n_envs: 32 #560
     tag_id: 1
     seed: [1,561,1]
     split: valid
@@ -192,7 +192,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_dev/inverse_dynamics_qa.jsonl
 
   - name: GymProxyTool
-    n_envs: 2 #560
+    n_envs: 50 #560
     tag_id: 2
     seed: [1,561,1]
     split: valid
@@ -204,7 +204,7 @@ envs:
       client_url: ws://165.124.184.151:8766/render
 
   - name: ViewSpatialNoToolGym
-    n_envs: 2
+    n_envs: 32
     split: valid
     tag_id: 3
     seed: [0,318,1]
@@ -213,7 +213,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/viewspatial_scannet_out/dataset_test.jsonl
 
   - name: ViewSpatialToolGym
-    n_envs: 2
+    n_envs: 50
     split: valid
     tag_id: 4
     seed: [0,318,1]
@@ -224,7 +224,7 @@ envs:
       client_url: ws://165.124.184.151:8766/render
 
   - name: VSIBenchNoToolGym
-    n_envs: 2
+    n_envs: 32
     split: valid
     tag_id: 5
     seed: [0,2071,1]
@@ -235,7 +235,7 @@ envs:
       video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
 
   - name: VSIBenchToolGym
-    n_envs: 2
+    n_envs: 32
     split: valid
     tag_id: 6
     seed: [0,2071,1]

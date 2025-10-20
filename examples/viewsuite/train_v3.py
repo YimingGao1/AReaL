@@ -261,10 +261,12 @@ def main(args):
         base_seed=config.seed,
        
     )
+    
+    # only rank0 submit eval task so it needs see full dataset
     valid_dataloader = create_dataloader(
         valid_dataset,
-        rank=actor.data_parallel_rank,
-        world_size=actor.data_parallel_world_size,
+        rank=0,
+        world_size=1,
         dataset_config=config.valid_dataset,
     )
 
