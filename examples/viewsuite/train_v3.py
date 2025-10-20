@@ -32,9 +32,9 @@ from areal.utils.hf_utils import load_hf_processor_and_tokenizer
 from areal.utils.recover import RecoverHandler
 from areal.utils.saver import Saver
 from areal.utils.stats_logger import StatsLogger
-from agent_dataset import build_env_dataset
-from agent_args import AgentGRPOConfig
-from workflow_v3 import VisionMultiTurnAgentEnvWorkflow
+from areal.viewsuite.agent_dataset import build_env_dataset
+from areal.viewsuite.agent_args import AgentGRPOConfig
+from areal.viewsuite.workflow_v3 import VisionMultiTurnAgentEnvWorkflow
 
 
 # ------------------------------------------------------
