@@ -168,7 +168,7 @@ envs:
     split: train
     max_turns: 10
     config:
-      jsonl_path: ~/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
+      jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
       max_turns: ${envs[0].max_turns}
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
@@ -180,7 +180,7 @@ envs:
     split: valid
     max_turns: 1
     config:
-      jsonl_path: ~/projects/data/scannet_proxy_task_dev/forward_dynamics_qa.jsonl
+      jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_dev/forward_dynamics_qa.jsonl
 
   - name: GymProxyNoTool
     n_envs: 2 #560
@@ -189,7 +189,7 @@ envs:
     split: valid
     max_turns: 1
     config:
-      jsonl_path: ~/projects/data/scannet_proxy_task_dev/inverse_dynamics_qa.jsonl
+      jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_dev/inverse_dynamics_qa.jsonl
 
   - name: GymProxyTool
     n_envs: 2 #560
@@ -198,7 +198,7 @@ envs:
     split: valid
     max_turns: 10
     config:
-      jsonl_path: ~/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
+      jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
       max_turns: ${envs[0].max_turns}
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
@@ -210,7 +210,7 @@ envs:
     seed: [0,318,1]
     max_turns: 1
     config:
-      jsonl_path: ~/projects/data/viewspatial_scannet_out/dataset_test.jsonl
+      jsonl_path: ${oc.env:HOME}/projects/data/viewspatial_scannet_out/dataset_test.jsonl
 
   - name: ViewSpatialToolGym
     n_envs: 2
@@ -219,7 +219,7 @@ envs:
     seed: [0,318,1]
     max_turns: 10
     config:
-      jsonl_path: ~/projects/data/viewspatial_scannet_out/dataset_test.jsonl
+      jsonl_path: ${oc.env:HOME}/projects/data/viewspatial_scannet_out/dataset_test.jsonl
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
 
@@ -230,9 +230,9 @@ envs:
     seed: [0,2071,1]
     max_turns: 1
     config:
-      jsonl_path: ~/projects/data/vsi_bench/vsi_bench.jsonl
-      camposes_dir: ~/projects/data/vsi_bench/camposes
-      video_dir: ~/projects/data/vsi_bench/vsi_bench_video
+      jsonl_path: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench.jsonl
+      camposes_dir: ${oc.env:HOME}/projects/data/vsi_bench/camposes
+      video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
 
   - name: VSIBenchToolGym
     n_envs: 2
@@ -241,9 +241,9 @@ envs:
     seed: [0,2071,1]
     max_turns: 10
     config:
-      jsonl_path: ~/projects/data/vsi_bench/vsi_bench.jsonl
-      camposes_dir: ~/projects/data/vsi_bench/camposes
-      video_dir: ~/projects/data/vsi_bench/vsi_bench_video
+      jsonl_path: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench.jsonl
+      camposes_dir: ${oc.env:HOME}/projects/data/vsi_bench/camposes
+      video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
       max_turns: 10
