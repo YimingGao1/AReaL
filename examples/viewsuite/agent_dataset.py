@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# NOTE: Code comments in English.
+
 import hashlib
 import random
 from typing import List, Optional, Sequence
@@ -135,18 +138,15 @@ def _generate_seeds_for_spec(
 
 class AgenticDataset(Dataset):
     """
-    Expands a list of EnvSpec into individual environment instances, with deterministic seeds,
-    sharded across distributed workers.
+    Expand a list of EnvSpec into individual environment instances with deterministic seeds.
+    **No sharding is performed here**; let the DataLoader/sampler handle rank/world_size.
     """
 
     def __init__(
         self,
         env_specs: List[EnvSpec],
         base_seed: int,
-        rank: int,
-        world_size: int,
     ):
-        assert world_size >= 1 and 0 <= rank < world_size, "Invalid rank/world_size"
         self.items = []
 
         for spec_idx, spec in enumerate(env_specs):
@@ -155,9 +155,7 @@ class AgenticDataset(Dataset):
                 base_seed,
                 spec_idx,
             )
-            for i, env_seed in enumerate(seeds):
-                if i % world_size != rank:
-                    continue
+            for env_seed in seeds:
                 # Each record contains env metadata and the resolved RNG seed
                 tag_id = int(getattr(spec, "tag_id", 0))
                 self.items.append(
@@ -181,26 +179,21 @@ def build_env_dataset(
     envs_config: List[EnvSpec],
     split: str,
     base_seed: int,
-    rank: int,
-    world_size: int,
 ) -> AgenticDataset:
     """
-    Filter EnvSpec list by split, and return a sharded AgenticDataset.
+    Filter EnvSpec list by split, and return an AgenticDataset **without** internal sharding.
 
     Args:
         envs_config: List of EnvSpec objects (train + valid + other splits).
         split: "train" or "valid".
         base_seed: Global base seed.
-        rank: Distributed rank.
-        world_size: Total number of processes.
 
     Returns:
-        AgenticDataset containing only data for the given split and rank.
+        AgenticDataset containing only data for the given split.
+        Sharding across workers should be done by the DataLoader/sampler.
     """
     split_specs = [spec for spec in envs_config if spec.split == split]
     return AgenticDataset(
         split_specs,
         base_seed,
-        rank,
-        world_size,
     )

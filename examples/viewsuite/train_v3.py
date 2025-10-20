@@ -6,16 +6,15 @@ import re
 import sys
 import time
 from copy import deepcopy
-from typing import List, Dict, Any
+from typing import Dict, Any
 
 import torch
 import torch.distributed as dist
-from torch.utils.data import Subset, Dataset
-from torchdata.stateful_dataloader import StatefulDataLoader
 
 from areal.api.alloc_mode import AllocationMode
 from areal.api.cli_args import GRPOConfig, load_expr_config
 from areal.api.io_struct import FinetuneSpec, StepInfo, WeightUpdateMeta
+
 from areal.dataset import get_custom_dataset
 from areal.engine.ppo.actor import FSDPPPOActor
 from areal.engine.sglang_remote import RemoteSGLangEngine
@@ -26,16 +25,17 @@ from areal.utils.data import (
     cycle_dataloader,
     tensor_container_to,
 )
+from areal.utils.dataloader import create_dataloader
 from areal.utils.device import log_gpu_stats
 from areal.utils.evaluator import Evaluator
 from areal.utils.hf_utils import load_hf_processor_and_tokenizer
 from areal.utils.recover import RecoverHandler
 from areal.utils.saver import Saver
 from areal.utils.stats_logger import StatsLogger
-
-from dataset import build_env_dataset
+from agent_dataset import build_env_dataset
 from agent_args import AgentGRPOConfig
 from workflow_v3 import VisionMultiTurnAgentEnvWorkflow
+
 
 # ------------------------------------------------------
 # Utilities
@@ -51,7 +51,8 @@ def submit_with_backpressure(engine: RemoteSGLangEngine, items, workflow, max_in
         dict: aggregated results merged across multiple wait() calls (best-effort).
     """
     inflight = 0
-    aggregated = {}
+    aggregated: Dict[str, Any] = {}
+
     # Submit loop
     for item in items:
         # Try to submit; if input queue is full, backoff for a short time and retry.
@@ -100,7 +101,7 @@ def run_evaluation(
     evaluator: Evaluator,
     eval_rollout: RemoteSGLangEngine,
     eval_workflow: VisionMultiTurnAgentEnvWorkflow,
-    valid_dataloader: StatefulDataLoader,
+    valid_dataloader,
     actor: FSDPPPOActor,
     epoch: int,
     step: int,
@@ -216,6 +217,7 @@ def run_evaluation(
 # ------------------------------------------------------
 
 def main(args):
+    # Load config (AgentGRPOConfig extends GRPOConfig with agent-specific fields)
     config, _ = load_expr_config(args, AgentGRPOConfig)
     config: AgentGRPOConfig
 
@@ -236,43 +238,34 @@ def main(args):
     # Tokenizer / Processor
     processor, tokenizer = load_hf_processor_and_tokenizer(config.tokenizer_path)
 
-    # Build datasets (train / valid)
+    # ------------------------------------------------------------------
+    # Datasets and Dataloaders (new API)
+    #   - get_custom_dataset(split=..., dataset_config=..., processor=...)
+    #   - create_dataloader(dataset, rank=..., world_size=..., dataset_config=...)
+    #   Sharding is handled inside create_dataloader; dataset itself is unsharded.
+    # ------------------------------------------------------------------
     train_dataset = build_env_dataset(
         config.envs,
         split="train",
         base_seed=config.seed,
+    )
+    train_dataloader = create_dataloader(
+        train_dataset,
         rank=actor.data_parallel_rank,
         world_size=actor.data_parallel_world_size,
+        dataset_config=config.train_dataset,
     )
-    train_size = len(train_dataset)
-    subset_size = int(1.0 * train_size)
-    random_indices = torch.randperm(train_size).tolist()[:subset_size]
-    subset_train_dataset = Subset(train_dataset, random_indices)
-
     valid_dataset = build_env_dataset(
         config.envs,
         split="valid",
         base_seed=config.seed,
+       
+    )
+    valid_dataloader = create_dataloader(
+        valid_dataset,
         rank=actor.data_parallel_rank,
         world_size=actor.data_parallel_world_size,
-    )
-
-    # Dataloaders
-    train_dataloader = StatefulDataLoader(
-        subset_train_dataset,
-        batch_size=config.train_dataset.batch_size // actor.data_parallel_world_size,
-        shuffle=config.train_dataset.shuffle,
-        num_workers=config.train_dataset.num_workers,
-        collate_fn=lambda x: x,
-        drop_last=config.train_dataset.drop_last,
-    )
-    valid_dataloader = StatefulDataLoader(
-        valid_dataset,
-        batch_size=config.valid_dataset.batch_size // actor.data_parallel_world_size,
-        shuffle=config.valid_dataset.shuffle,
-        num_workers=config.valid_dataset.num_workers,
-        collate_fn=lambda x: x,
-        drop_last=config.valid_dataset.drop_last,
+        dataset_config=config.valid_dataset,
     )
 
     # Training spec
@@ -291,12 +284,12 @@ def main(args):
     eval_rollout.config.max_head_offpolicyness = int(1e12)
     eval_rollout.initialize()
 
-    weight_update_meta = WeightUpdateMeta.from_disk(
-        experiment_name=config.experiment_name,
-        trial_name=config.trial_name,
-        file_root=config.cluster.fileroot
-    )
-
+    # weight_update_meta = WeightUpdateMeta.from_disk(
+    #     experiment_name=config.experiment_name,
+    #     trial_name=config.trial_name,
+    #     file_root=config.cluster.fileroot
+    # )
+    weight_update_meta = WeightUpdateMeta.from_fsdp_xccl(allocation_mode)
     actor.initialize(None, ft_spec)
     actor.connect_engine(rollout, weight_update_meta)
 
@@ -305,8 +298,6 @@ def main(args):
         ref = FSDPPPOActor(config=config.ref)
         ref.create_process_group(parallel_strategy=parallel_strategy)
         ref.initialize(None, ft_spec)
-
-    # NCCL/XCCL weight update meta (broadcast rank-0 info to all ranks)
 
     # Build workflows (train / eval)
     if tokenizer.pad_token_id not in config.gconfig.stop_token_ids:
@@ -362,8 +353,7 @@ def main(args):
     # ------------------------------------------------------
     # (NEW) Optional evaluation before training loop
     # ------------------------------------------------------
-    # We keep versions at their initial values; this measures current model state.
-    if getattr(config, "eval_first", False):
+    if getattr(config, "eval_first", True):
         # Use epoch=0, step=0, and current global_step (start_step) for bookkeeping.
         run_evaluation(
             evaluator=evaluator,
@@ -432,7 +422,8 @@ def main(args):
         # Create barrier to synchronize all rollout processes.
         dist.barrier(device_ids=[actor.device.index])
         current_platform.synchronize()
-        
+
+        # ---------- Online train stats (avg reward/success + per-tag) ----------
         if actor.is_data_parallel_head() and "tag_id" in batch:
             tag_tensor = batch["tag_id"].detach().long().cpu().view(-1)
             if tag_tensor.numel() > 0:
@@ -525,7 +516,7 @@ def main(args):
         dist.barrier(device_ids=[actor.device.index])
         current_platform.synchronize()
 
-        # ---------- Evaluation ---------- (reused)
+        # ---------- Evaluation ----------
         run_evaluation(
             evaluator=evaluator,
             eval_rollout=eval_rollout,
