@@ -7,7 +7,7 @@ from typing import List, Optional, Sequence
 
 from torch.utils.data import Dataset
 
-from agent_args import EnvSpec
+from areal.viewsuite.agent_args import EnvSpec
 
 
 # Upper bound used for RNG sampling when only a base seed is provided
