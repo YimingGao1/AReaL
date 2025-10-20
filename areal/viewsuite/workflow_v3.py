@@ -19,7 +19,7 @@ from areal.utils.data import concat_padded_tensors
 from areal.utils.image import image2base64
 from realhf.base import logging
 from view_suite.gym.gym_image_env import GymImageEnv
-from registry import REGISTERED_ENVS
+from areal.viewsuite.registry import REGISTERED_ENVS
 import traceback
 logger = logging.getLogger("Vision Multi-Turn AgentEnv workflow")
 
