@@ -1,5 +1,5 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_7b-train-1
+trial_name: viewsuite_active_explore_7b-train-2
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
