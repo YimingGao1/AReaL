@@ -1,5 +1,5 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_7b-test-3
+trial_name: viewsuite_active_explore_7b-test-4
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
@@ -233,7 +233,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench.jsonl
       camposes_dir: ${oc.env:HOME}/projects/data/vsi_bench/camposes
       video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
-      sample_frames: 16
+      sample_frames: 8
       resize: [300,300]
     
   - name: VSIBenchToolGym
@@ -249,7 +249,7 @@ envs:
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
       max_turns: 10
-      sample_frames: 16
-      view_interval: 8
+      sample_frames: 8
+      view_interval: 4
       resize: [300,300]
 
