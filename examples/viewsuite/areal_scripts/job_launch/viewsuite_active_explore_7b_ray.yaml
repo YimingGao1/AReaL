@@ -1,5 +1,5 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_7b-test-6
+trial_name: viewsuite_active_explore_7b-train-00
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
@@ -19,14 +19,14 @@ allocation_mode: sglang.d8+d2c4
 rollout:
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
-  max_concurrent_rollouts: 24
+  max_concurrent_rollouts: 64
   queue_size: 4096
   consumer_batch_size: ${train_dataset.batch_size}
   max_head_offpolicyness: 4
   enable_rollout_tracing: false
 
 gconfig:
-  n_samples: 8
+  n_samples: 4
   min_new_tokens: 0
   max_new_tokens: 512
   greedy: false
@@ -100,7 +100,7 @@ sglang:
   dtype: ${actor.dtype}
   max_running_requests: 64
   context_length: 32768
-  mem_fraction_static: 0.4
+  mem_fraction_static: 0.6
   enable_multimodal: true
 
 # datasets
@@ -171,7 +171,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
       max_turns: ${envs[0].max_turns}
       render_backend: client
-      client_url: ws://165.124.184.151:8766/render
+      client_url: ws://165.124.184.151:8766/render|ws://80.188.223.202:31840/render
 
   - name: GymProxyNoTool
     n_envs: 32 #560
@@ -201,7 +201,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
       max_turns: ${envs[0].max_turns}
       render_backend: client
-      client_url: ws://165.124.184.151:8766/render
+      client_url: ws://165.124.184.151:8766/render|ws://80.188.223.202:31840/render
 
   - name: ViewSpatialNoToolGym
     n_envs: 32
@@ -222,7 +222,7 @@ envs:
     config:
       jsonl_path: ${oc.env:HOME}/projects/data/viewspatial_scannet_out/dataset_test.jsonl
       render_backend: client
-      client_url: ws://165.124.184.151:8766/render
+      client_url: ws://165.124.184.151:8766/render|ws://80.188.223.202:31840/render
       resize: [300,300]
 
   - name: VSIBenchNoToolGym
@@ -249,7 +249,7 @@ envs:
       camposes_dir: ${oc.env:HOME}/projects/data/vsi_bench/camposes
       video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
       render_backend: client
-      client_url: ws://165.124.184.151:8766/render
+      client_url: ws://165.124.184.151:8766/render|ws://80.188.223.202:31840/render
       max_turns: 10
       sample_frames: 32
       view_interval: 8
