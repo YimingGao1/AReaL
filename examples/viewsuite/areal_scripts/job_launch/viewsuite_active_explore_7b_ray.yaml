@@ -1,11 +1,11 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_7b-train-0
+trial_name: viewsuite_active_explore_7b-train-1
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
 tokenizer_path: ${actor.path}
 async_training: true
-eval_first: true
+eval_first: false
 cluster:
   n_nodes: 2
   n_gpus_per_node: 8
@@ -14,12 +14,12 @@ cluster:
     type: ray
     nfs_record_root: ${fileroot}/name_resolve
 
-allocation_mode: sglang.d4t2+d8
+allocation_mode: sglang.d4t2+c8
 
 rollout:
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
-  max_concurrent_rollouts: 32
+  max_concurrent_rollouts: 24
   queue_size: 4096
   consumer_batch_size: ${train_dataset.batch_size}
   max_head_offpolicyness: 4
@@ -100,12 +100,12 @@ sglang:
   dtype: ${actor.dtype}
   max_running_requests: 64
   context_length: 32768
-  mem_fraction_static: 0.6
+  mem_fraction_static: 0.5
   enable_multimodal: true
 
 # datasets
 train_dataset:
-  batch_size: 32
+  batch_size: 8
   shuffle: true
   pin_memory: true
   num_workers: 4
