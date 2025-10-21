@@ -233,7 +233,9 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench.jsonl
       camposes_dir: ${oc.env:HOME}/projects/data/vsi_bench/camposes
       video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
-
+      sample_frames: 16
+      resize: (300,300)
+    
   - name: VSIBenchToolGym
     n_envs: 32
     split: valid
@@ -247,6 +249,7 @@ envs:
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
       max_turns: 10
-      sample_frames: 16
-      view_interval: 8
+      sample_frames: 8
+      view_interval: 4
+      resize: (300,300)
 
