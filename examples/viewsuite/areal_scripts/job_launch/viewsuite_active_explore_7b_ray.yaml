@@ -1,5 +1,5 @@
 experiment_name: areal
-trial_name: viewsuite_active_explore_7b-test-4
+trial_name: viewsuite_active_explore_7b-test-5
 fileroot: /blob/v-kangwang/viewsuite #/home/aiscuser/projects
 seed: 1
 total_train_epochs: 10
@@ -211,6 +211,7 @@ envs:
     max_turns: 1
     config:
       jsonl_path: ${oc.env:HOME}/projects/data/viewspatial_scannet_out/dataset_test.jsonl
+      resize: [300,300]
 
   - name: ViewSpatialToolGym
     n_envs: 32
@@ -222,6 +223,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/viewspatial_scannet_out/dataset_test.jsonl
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
+      resize: [300,300]
 
   - name: VSIBenchNoToolGym
     n_envs: 32
@@ -233,7 +235,7 @@ envs:
       jsonl_path: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench.jsonl
       camposes_dir: ${oc.env:HOME}/projects/data/vsi_bench/camposes
       video_dir: ${oc.env:HOME}/projects/data/vsi_bench/vsi_bench_video
-      sample_frames: 8
+      sample_frames: 32
       resize: [300,300]
     
   - name: VSIBenchToolGym
@@ -249,7 +251,7 @@ envs:
       render_backend: client
       client_url: ws://165.124.184.151:8766/render
       max_turns: 10
-      sample_frames: 8
-      view_interval: 4
+      sample_frames: 32
+      view_interval: 8
       resize: [300,300]
 
