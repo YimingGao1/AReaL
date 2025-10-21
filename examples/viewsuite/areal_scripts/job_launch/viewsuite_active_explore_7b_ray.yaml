@@ -14,7 +14,7 @@ cluster:
     type: ray
     nfs_record_root: ${fileroot}/name_resolve
 
-allocation_mode: sglang.d4t2+d2c4
+allocation_mode: sglang.d8+d2c4
 
 rollout:
   experiment_name: ${experiment_name}
@@ -105,7 +105,7 @@ sglang:
 
 # datasets
 train_dataset:
-  batch_size: 16
+  batch_size: 32
   shuffle: true
   pin_memory: true
   num_workers: 4
