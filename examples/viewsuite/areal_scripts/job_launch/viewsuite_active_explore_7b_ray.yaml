@@ -14,7 +14,7 @@ cluster:
     type: ray
     nfs_record_root: ${fileroot}/name_resolve
 
-allocation_mode: sglang.d4t2+c8
+allocation_mode: sglang.d4t2+d2c4
 
 rollout:
   experiment_name: ${experiment_name}
