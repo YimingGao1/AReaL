@@ -162,9 +162,9 @@ launcher:
 # forward 0, inverse 1, active_explore 2
 envs:
   - name: GymProxyTool
-    n_envs: 4460 #4460
+    n_envs: 2230 #4460
     tag_id: 2
-    seed: [1,4461,1]
+    seed: [1,2231,1]
     split: train
     max_turns: 10
     config:
@@ -172,6 +172,18 @@ envs:
       max_turns: ${envs[0].max_turns}
       render_backend: client
       client_url: ws://165.124.184.151:8766/render|ws://80.188.223.202:31840/render
+
+  - name: GymProxyTool
+    n_envs: 2230 #4460
+    tag_id: 2
+    seed: [2231,4461,1]
+    split: train
+    max_turns: 10
+    config:
+      jsonl_path: ${oc.env:HOME}/projects/data/scannet_proxy_task_train/active_explore_qa.jsonl
+      max_turns: ${envs[0].max_turns}
+      render_backend: client
+      client_url: ws://80.188.223.202:31840/render|ws://165.124.184.151:8766/render
 
   - name: GymProxyNoTool
     n_envs: 32 #560
