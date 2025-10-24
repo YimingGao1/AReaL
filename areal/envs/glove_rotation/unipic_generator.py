@@ -4,6 +4,8 @@ from PIL import Image
 from diffusers import StableDiffusion3KontextPipeline, AutoencoderKL, CLIPTextModelWithProjection, CLIPTokenizer, T5EncoderModel, T5TokenizerFast, FlowMatchEulerDiscreteScheduler
 from transformers import Qwen2_5_VLForConditionalGeneration, Qwen2_5_VLProcessor
 from unipicv2.stable_diffusion_3_conditioner import StableDiffusion3Conditioner
+from diffusers import StableDiffusion3KontextPipeline, AutoencoderKL, CLIPTextModelWithProjection, CLIPTokenizer, T5EncoderModel, T5TokenizerFast, FlowMatchEulerDiscreteScheduler
+from unipicv2.transformer_sd3_kontext import SD3Transformer2DKontextModel
 
 class UniPicImageGenerator(nn.Module):
     """简化的UniPic图片生成器"""
@@ -33,7 +35,7 @@ class UniPicImageGenerator(nn.Module):
     def _load_pipeline(self, checkpoint_path):
         """加载UniPic2 pipeline"""
         # 加载transformer
-        transformer = StableDiffusion3KontextTransformer.from_pretrained(
+        transformer = StableDiffusion3Conditioner.from_pretrained(
             checkpoint_path, subfolder="transformer", torch_dtype=torch.bfloat16
         ).cuda()
         

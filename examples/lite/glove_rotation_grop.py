@@ -25,6 +25,7 @@ from torch.utils.data import Dataset
 from typing import List, Dict, Any
 from areal.dataset.multi_env_dataset import build_env_dataset
 from areal.api.agent_args import AgentGRPOConfig
+from areal.workflow.glove_rotation import GloveRotationWorkflow
 
 def main(args):
     config, _ = load_expr_config(args, AgentGRPOConfig)
@@ -37,7 +38,6 @@ def main(args):
 
     seeding.set_random_seed(config.seed, key=f"trainer{rank}")
     
-    # 构建环境数据集
     train_dataset = build_env_dataset(
         config.envs, split="train", base_seed=config.seed, rank=rank, world_size=world_size
     )
@@ -45,7 +45,7 @@ def main(args):
         config.envs, split="valid", base_seed=config.seed, rank=rank, world_size=world_size
     )
     
-    # 创建数据加载器
+   
     train_dataloader = StatefulDataLoader(
         train_dataset,
         batch_size=config.train_dataset.batch_size // world_size,
@@ -69,14 +69,14 @@ def main(args):
         train_batch_size=config.train_dataset.batch_size,
     )
 
-    # 初始化推理引擎
+    
     rollout = RemoteSGLangEngine(config.rollout)
     rollout.initialize(None, ft_spec)
     eval_rollout = RemoteSGLangEngine(config.rollout)
     eval_rollout.initialize(None, ft_spec)
     eval_rollout.set_version(int(1e12))
 
-    # 初始化训练引擎 - 使用我们的自定义Actor
+
     actor = FSDPPPOActor(config=config.actor)
     actor.initialize(None, ft_spec)
     
@@ -85,7 +85,7 @@ def main(args):
         ref = FSDPPPOActor(config=config.ref)
         ref.initialize(None, ft_spec)
 
-    # 权重更新元数据
+        
     weight_update_meta = [WeightUpdateMeta.from_disk(
         experiment_name=config.saver.experiment_name,
         trial_name=config.saver.trial_name,
@@ -94,24 +94,25 @@ def main(args):
     dist.broadcast_object_list(weight_update_meta, src=0)
     weight_update_meta = weight_update_meta[0]
 
-    # 创建rollout工作流
     if tokenizer.pad_token_id not in config.gconfig.stop_token_ids:
         config.gconfig.stop_token_ids.append(tokenizer.pad_token_id)
     if tokenizer.eos_token_id not in config.gconfig.stop_token_ids:
         config.gconfig.stop_token_ids.append(tokenizer.eos_token_id)
     
-    workflow = VisionMultiTurnAgentEnvWorkflow(
+   # 在workflow创建部分添加UniPic配置
+    workflow = GloveRotationWorkflow(
         gconfig=config.gconfig,
         tokenizer=tokenizer,
         processor=processor,
-        #max_turns=config.max_turns,
-        max_turns=1,
+        qwen_model_path=config.envs[0].config.qwen_model_path,
+        unipic_checkpoint_path=config.envs[0].config.unipic_checkpoint_path,
+        num_inference_steps=config.envs[0].config.num_inference_steps,
+        guidance_scale=config.envs[0].config.guidance_scale,
         dump_dir=os.path.join(
             StatsLogger.get_log_path(config.stats_logger), "generated"
         ),
     )
 
-    # 运行训练
     saver = Saver(config.saver, ft_spec)
     stats_logger = StatsLogger(config.stats_logger, ft_spec)
     evaluator = Evaluator(config.evaluator, ft_spec)
