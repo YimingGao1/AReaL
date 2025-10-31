@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 from torch.utils.data import Subset
 from torchdata.stateful_dataloader import StatefulDataLoader
-
+from areal.workflow.vision_image_editing_agent import VisionImageEditingWorkflow
 from areal.api.cli_args import GRPOConfig, load_expr_config
 from areal.api.io_struct import AllocationMode, FinetuneSpec, StepInfo, WeightUpdateMeta
 from areal.dataset import get_custom_dataset
@@ -99,8 +99,8 @@ def main(args):
     if tokenizer.eos_token_id not in config.gconfig.stop_token_ids:
         config.gconfig.stop_token_ids.append(tokenizer.eos_token_id)
     
-   # 在workflow创建部分添加UniPic配置
-    workflow = GloveRotationWorkflow(
+   # 在workflow部分添加UniPic配置
+    workflow = VisionImageEditingWorkflow(
         gconfig=config.gconfig,
         tokenizer=tokenizer,
         processor=processor,
@@ -108,6 +108,8 @@ def main(args):
         unipic_checkpoint_path=config.envs[0].config.unipic_checkpoint_path,
         num_inference_steps=config.envs[0].config.num_inference_steps,
         guidance_scale=config.envs[0].config.guidance_scale,
+        image_size=config.envs[0].config.image_size,
+        max_turns=config.max_turns,
         dump_dir=os.path.join(
             StatsLogger.get_log_path(config.stats_logger), "generated"
         ),
